@@ -1,42 +1,39 @@
-import { Button, Col, Divider, Form, Input, Row, Space, message, Checkbox } from "antd";
+import { Button, Col, Divider, Form, Input, Row, Space, message, Checkbox, Modal, Alert } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 import Text from "antd/lib/typography/Text";
 import Title from "antd/lib/typography/Title";
 import Dragger from "antd/lib/upload/Dragger";
 import { CloudUploadOutlined } from '@ant-design/icons';
+import { useState } from "react";
+
+interface formProps {
+  name: string;
+  "company-logo": any;
+  description: string;
+  facebook: string;
+  linkedin: string;
+  twitter: string;
+  "url-profile": string;
+  reports: boolean;
+  emails: boolean;
+}
+
 
 export function FormFunc() {
+  const [reportCheck, setReportCheck] = useState(false);
+  const [emailCheck, setEmailCheck] = useState(false);
   const [form] = Form.useForm();
 
-  const onFinish = (values: any) => {
+  const handleFinish = (values: formProps) => {
     console.log(values);
   }
 
-  const onReset = () => {
+  const handleReset = () => {
     form.resetFields();
   };
 
-  const props = {
-    
-    action: 'https://run.mocky.io/v3/c85e3f6b-8028-4c8e-9039-a12c5cc8ba55',
-    onChange(info: any) {
-      const { status } = info.file;
-      if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (status === 'done') {
-        message.success(`${info.file.name} file uploaded successfully.`);
-      } else if (status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-    onDrop(e: any) {
-      console.log('Dropped files', e.dataTransfer.files);
-    },
-  };
-
   return (
-    <Form form={form} name={"profile-settings"} onFinish={onFinish}>
+    <Form form={form} name={"profile-settings"} onFinish={handleFinish} initialValues={{ reports: false, emails: false }}>
       <Row gutter={8} justify="space-between">
         <Space direction="vertical" size={0}>
           <Title level={3}>Company profile</Title>
@@ -44,7 +41,7 @@ export function FormFunc() {
         </Space>
         <Space >
           <Form.Item >
-            <Button shape="round" htmlType="button" onClick={onReset}>Cancel</Button>
+            <Button shape="round" htmlType="button" onClick={handleReset}>Cancel</Button>
           </Form.Item>
           <Form.Item>
             <Button type="primary" shape="round" htmlType="submit">Save</Button>
@@ -58,7 +55,15 @@ export function FormFunc() {
           <Text>This will be displayed on your profile</Text>
         </Col>
         <Col span={12}>
-          <Form.Item name={'name'}>
+          <Form.Item 
+            name={'name'}
+            rules={[
+              { required: true, message: "Please enter your name" },
+              { whitespace: true, message: "Please enter a valid name" },
+              { min: 2, message: "A name with at least 2 characters" },
+            ]}
+            hasFeedback
+          >
             <Input size="large" placeholder="Name..." />
           </Form.Item>
           <Form.Item name={'url-profile'}>
@@ -85,11 +90,27 @@ export function FormFunc() {
           <Text>Update your company logo and then choose where you want it to display.</Text>
         </Col>
         <Col span={4}> 
-          <div>Imagem</div>
+          <Modal
+      
+          >
+            <img alt="example" style={{ width: '100%' }} src={''} />
+          </Modal>
         </Col>
         <Col span={8}>
-          <Form.Item name={'company-logo'}>
-            <Dragger {...props}>
+          <Form.Item 
+            name={'company-logo'} 
+            getValueFromEvent={(event) => {
+              console.log(event);
+              if(Array.isArray(event)) {
+                return event;
+              }
+              return event && event.fileList
+            }}
+          >
+            <Dragger 
+              showUploadList={true}
+              accept=".svg,.png,.jpg,.gif"
+            >
               <p>
                 <CloudUploadOutlined style={{fontSize: '24px', background: '#c6f1ff', borderRadius: '50px'}} />
               </p>
@@ -105,11 +126,11 @@ export function FormFunc() {
           <Text>Add your logo to reports and emails.</Text>
         </Col>
         <Col span={12}>
-          <Form.Item name={'reports'}>
-            <Checkbox>Reports</Checkbox>
+          <Form.Item name={'reports'} valuePropName="checked">
+            <Checkbox checked={reportCheck} onChange={() => setReportCheck(!reportCheck)}>Reports</Checkbox>
           </Form.Item>
-          <Form.Item name={'emails'}>
-            <Checkbox>Emails</Checkbox>
+          <Form.Item name={'emails'} valuePropName="checked">
+            <Checkbox checked={emailCheck} onChange={() => setEmailCheck(!emailCheck)}>Emails</Checkbox>
           </Form.Item>
         </Col>
       </Row>
